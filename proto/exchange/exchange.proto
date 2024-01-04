@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package exchange;
+
+option go_package = "nnk.exchange.v1;exchangev1";
+
+service Exchange {
+    rpc Register (RegisterRequest) returns (RegisterResponse);
+    rpc Login (LoginRequest) returns (loginResponse);
+    rpc UpdateData (UpdateDataRequest) returns (UpdateDataResponse);
+}
+
+message RegisterRequest {
+  string serial_number = 1;
+  string api_key = 2;
+}
+
+message RegisterResponse {
+  string agent_uuid = 1;
+}
+
+message LoginRequest{
+  string agent_uuid =1;
+}
+
+message loginResponse{
+  string token = 1;
+}
+
+message UpdateDataRequest {
+  string uuid = 1;
+  optional float btemp = 2;
+  optional float cputemp = 3;
+  optional bool health = 4;
+  optional bool online = 5;
+}
+
+message UpdateDataResponse {
+  bool status = 1;
+  string code = 2;
+  string errmessage = 3;
+}
