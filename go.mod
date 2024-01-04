@@ -1,4 +1,4 @@
-module github.com/nkolentcev/contracts
+module github.com/nkolentcev/plx-sc-mvp/contracts
 
 go 1.21.5
 
