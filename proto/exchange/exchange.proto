@@ -7,7 +7,11 @@ option go_package = "nnk.exchange.v1;exchangev1";
 service Exchange {
     rpc Register (RegisterRequest) returns (RegisterResponse);
     rpc Login (LoginRequest) returns (loginResponse);
-    rpc UpdateData (UpdateDataRequest) returns (UpdateDataResponse);
+    rpc UpdateData (stream UpdateDataRequest) returns (UpdateDataResponse);
+    rpc ReciveCommand (ResiveCommandRequest) returns (stream ResiveCommandsResponse);
+    rpc CuntPass (CountPassRequest) returns (CountPassResponse);
+    rpc CuntDelayed (CuntDelayedRequest) returns (CuntDelayedResponse);
+    rpc CuntOpening (CuntOpeningRequest) returns (CuntOpeningResponse);
 }
 
 message RegisterRequest {
@@ -31,12 +35,51 @@ message UpdateDataRequest {
   string uuid = 1;
   optional float btemp = 2;
   optional float cputemp = 3;
-  optional bool health = 4;
-  optional bool online = 5;
+  optional string ethernetip = 4;
+  optional bool health = 5;
+  optional bool online = 6;
 }
 
 message UpdateDataResponse {
   bool status = 1;
   string code = 2;
   string errmessage = 3;
+}
+
+message ResiveCommandRequest {
+  string uuid = 1;
+  bool ready = 2;
+}
+
+message ResiveCommandsResponse {
+  string uuid = 1;
+  string command = 2;
+  string params = 3;
+}
+
+message CountPassRequest {
+  string uuid = 1;
+  int32 counter = 2;
+}
+
+message CountPassResponse {
+  string code = 1;
+}
+
+message CuntDelayedRequest{
+  string uuid = 1;
+  int32 counter = 2;
+}
+
+message CuntDelayedResponse{
+  string code = 1;
+}
+
+message CuntOpeningRequest {
+  string uuid = 1;
+  int32 counter = 2;
+}
+
+message CuntOpeningResponse {
+  string code = 1;
 }

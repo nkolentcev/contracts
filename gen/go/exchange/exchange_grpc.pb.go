@@ -19,9 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Exchange_Register_FullMethodName   = "/exchange.Exchange/Register"
-	Exchange_Login_FullMethodName      = "/exchange.Exchange/Login"
-	Exchange_UpdateData_FullMethodName = "/exchange.Exchange/UpdateData"
+	Exchange_Register_FullMethodName      = "/exchange.Exchange/Register"
+	Exchange_Login_FullMethodName         = "/exchange.Exchange/Login"
+	Exchange_UpdateData_FullMethodName    = "/exchange.Exchange/UpdateData"
+	Exchange_ReciveCommand_FullMethodName = "/exchange.Exchange/ReciveCommand"
+	Exchange_CuntPass_FullMethodName      = "/exchange.Exchange/CuntPass"
+	Exchange_CuntDelayed_FullMethodName   = "/exchange.Exchange/CuntDelayed"
+	Exchange_CuntOpening_FullMethodName   = "/exchange.Exchange/CuntOpening"
 )
 
 // ExchangeClient is the client API for Exchange service.
@@ -30,7 +34,11 @@ const (
 type ExchangeClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
-	UpdateData(ctx context.Context, in *UpdateDataRequest, opts ...grpc.CallOption) (*UpdateDataResponse, error)
+	UpdateData(ctx context.Context, opts ...grpc.CallOption) (Exchange_UpdateDataClient, error)
+	ReciveCommand(ctx context.Context, in *ResiveCommandRequest, opts ...grpc.CallOption) (Exchange_ReciveCommandClient, error)
+	CuntPass(ctx context.Context, in *CountPassRequest, opts ...grpc.CallOption) (*CountPassResponse, error)
+	CuntDelayed(ctx context.Context, in *CuntDelayedRequest, opts ...grpc.CallOption) (*CuntDelayedResponse, error)
+	CuntOpening(ctx context.Context, in *CuntOpeningRequest, opts ...grpc.CallOption) (*CuntOpeningResponse, error)
 }
 
 type exchangeClient struct {
@@ -59,9 +67,93 @@ func (c *exchangeClient) Login(ctx context.Context, in *LoginRequest, opts ...gr
 	return out, nil
 }
 
-func (c *exchangeClient) UpdateData(ctx context.Context, in *UpdateDataRequest, opts ...grpc.CallOption) (*UpdateDataResponse, error) {
-	out := new(UpdateDataResponse)
-	err := c.cc.Invoke(ctx, Exchange_UpdateData_FullMethodName, in, out, opts...)
+func (c *exchangeClient) UpdateData(ctx context.Context, opts ...grpc.CallOption) (Exchange_UpdateDataClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Exchange_ServiceDesc.Streams[0], Exchange_UpdateData_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &exchangeUpdateDataClient{stream}
+	return x, nil
+}
+
+type Exchange_UpdateDataClient interface {
+	Send(*UpdateDataRequest) error
+	CloseAndRecv() (*UpdateDataResponse, error)
+	grpc.ClientStream
+}
+
+type exchangeUpdateDataClient struct {
+	grpc.ClientStream
+}
+
+func (x *exchangeUpdateDataClient) Send(m *UpdateDataRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *exchangeUpdateDataClient) CloseAndRecv() (*UpdateDataResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(UpdateDataResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *exchangeClient) ReciveCommand(ctx context.Context, in *ResiveCommandRequest, opts ...grpc.CallOption) (Exchange_ReciveCommandClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Exchange_ServiceDesc.Streams[1], Exchange_ReciveCommand_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &exchangeReciveCommandClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Exchange_ReciveCommandClient interface {
+	Recv() (*ResiveCommandsResponse, error)
+	grpc.ClientStream
+}
+
+type exchangeReciveCommandClient struct {
+	grpc.ClientStream
+}
+
+func (x *exchangeReciveCommandClient) Recv() (*ResiveCommandsResponse, error) {
+	m := new(ResiveCommandsResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *exchangeClient) CuntPass(ctx context.Context, in *CountPassRequest, opts ...grpc.CallOption) (*CountPassResponse, error) {
+	out := new(CountPassResponse)
+	err := c.cc.Invoke(ctx, Exchange_CuntPass_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *exchangeClient) CuntDelayed(ctx context.Context, in *CuntDelayedRequest, opts ...grpc.CallOption) (*CuntDelayedResponse, error) {
+	out := new(CuntDelayedResponse)
+	err := c.cc.Invoke(ctx, Exchange_CuntDelayed_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *exchangeClient) CuntOpening(ctx context.Context, in *CuntOpeningRequest, opts ...grpc.CallOption) (*CuntOpeningResponse, error) {
+	out := new(CuntOpeningResponse)
+	err := c.cc.Invoke(ctx, Exchange_CuntOpening_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +166,11 @@ func (c *exchangeClient) UpdateData(ctx context.Context, in *UpdateDataRequest, 
 type ExchangeServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
-	UpdateData(context.Context, *UpdateDataRequest) (*UpdateDataResponse, error)
+	UpdateData(Exchange_UpdateDataServer) error
+	ReciveCommand(*ResiveCommandRequest, Exchange_ReciveCommandServer) error
+	CuntPass(context.Context, *CountPassRequest) (*CountPassResponse, error)
+	CuntDelayed(context.Context, *CuntDelayedRequest) (*CuntDelayedResponse, error)
+	CuntOpening(context.Context, *CuntOpeningRequest) (*CuntOpeningResponse, error)
 	mustEmbedUnimplementedExchangeServer()
 }
 
@@ -88,8 +184,20 @@ func (UnimplementedExchangeServer) Register(context.Context, *RegisterRequest) (
 func (UnimplementedExchangeServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedExchangeServer) UpdateData(context.Context, *UpdateDataRequest) (*UpdateDataResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateData not implemented")
+func (UnimplementedExchangeServer) UpdateData(Exchange_UpdateDataServer) error {
+	return status.Errorf(codes.Unimplemented, "method UpdateData not implemented")
+}
+func (UnimplementedExchangeServer) ReciveCommand(*ResiveCommandRequest, Exchange_ReciveCommandServer) error {
+	return status.Errorf(codes.Unimplemented, "method ReciveCommand not implemented")
+}
+func (UnimplementedExchangeServer) CuntPass(context.Context, *CountPassRequest) (*CountPassResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CuntPass not implemented")
+}
+func (UnimplementedExchangeServer) CuntDelayed(context.Context, *CuntDelayedRequest) (*CuntDelayedResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CuntDelayed not implemented")
+}
+func (UnimplementedExchangeServer) CuntOpening(context.Context, *CuntOpeningRequest) (*CuntOpeningResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CuntOpening not implemented")
 }
 func (UnimplementedExchangeServer) mustEmbedUnimplementedExchangeServer() {}
 
@@ -140,20 +248,103 @@ func _Exchange_Login_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Exchange_UpdateData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateDataRequest)
+func _Exchange_UpdateData_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ExchangeServer).UpdateData(&exchangeUpdateDataServer{stream})
+}
+
+type Exchange_UpdateDataServer interface {
+	SendAndClose(*UpdateDataResponse) error
+	Recv() (*UpdateDataRequest, error)
+	grpc.ServerStream
+}
+
+type exchangeUpdateDataServer struct {
+	grpc.ServerStream
+}
+
+func (x *exchangeUpdateDataServer) SendAndClose(m *UpdateDataResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *exchangeUpdateDataServer) Recv() (*UpdateDataRequest, error) {
+	m := new(UpdateDataRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _Exchange_ReciveCommand_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ResiveCommandRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ExchangeServer).ReciveCommand(m, &exchangeReciveCommandServer{stream})
+}
+
+type Exchange_ReciveCommandServer interface {
+	Send(*ResiveCommandsResponse) error
+	grpc.ServerStream
+}
+
+type exchangeReciveCommandServer struct {
+	grpc.ServerStream
+}
+
+func (x *exchangeReciveCommandServer) Send(m *ResiveCommandsResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Exchange_CuntPass_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CountPassRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ExchangeServer).UpdateData(ctx, in)
+		return srv.(ExchangeServer).CuntPass(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Exchange_UpdateData_FullMethodName,
+		FullMethod: Exchange_CuntPass_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ExchangeServer).UpdateData(ctx, req.(*UpdateDataRequest))
+		return srv.(ExchangeServer).CuntPass(ctx, req.(*CountPassRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Exchange_CuntDelayed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CuntDelayedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExchangeServer).CuntDelayed(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Exchange_CuntDelayed_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExchangeServer).CuntDelayed(ctx, req.(*CuntDelayedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Exchange_CuntOpening_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CuntOpeningRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExchangeServer).CuntOpening(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Exchange_CuntOpening_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExchangeServer).CuntOpening(ctx, req.(*CuntOpeningRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -174,10 +365,29 @@ var Exchange_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Exchange_Login_Handler,
 		},
 		{
-			MethodName: "UpdateData",
-			Handler:    _Exchange_UpdateData_Handler,
+			MethodName: "CuntPass",
+			Handler:    _Exchange_CuntPass_Handler,
+		},
+		{
+			MethodName: "CuntDelayed",
+			Handler:    _Exchange_CuntDelayed_Handler,
+		},
+		{
+			MethodName: "CuntOpening",
+			Handler:    _Exchange_CuntOpening_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "UpdateData",
+			Handler:       _Exchange_UpdateData_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "ReciveCommand",
+			Handler:       _Exchange_ReciveCommand_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "exchange/exchange.proto",
 }
