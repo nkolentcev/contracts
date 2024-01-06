@@ -34,8 +34,8 @@ const (
 type ExchangeClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
-	UpdateData(ctx context.Context, opts ...grpc.CallOption) (Exchange_UpdateDataClient, error)
-	ReciveCommand(ctx context.Context, in *ResiveCommandRequest, opts ...grpc.CallOption) (Exchange_ReciveCommandClient, error)
+	UpdateData(ctx context.Context, in *UpdateDataRequest, opts ...grpc.CallOption) (*UpdateDataResponse, error)
+	ReciveCommand(ctx context.Context, in *ResiveCommandRequest, opts ...grpc.CallOption) (*ResiveCommandsResponse, error)
 	CuntPass(ctx context.Context, in *CountPassRequest, opts ...grpc.CallOption) (*CountPassResponse, error)
 	CuntDelayed(ctx context.Context, in *CuntDelayedRequest, opts ...grpc.CallOption) (*CuntDelayedResponse, error)
 	CuntOpening(ctx context.Context, in *CuntOpeningRequest, opts ...grpc.CallOption) (*CuntOpeningResponse, error)
@@ -67,70 +67,22 @@ func (c *exchangeClient) Login(ctx context.Context, in *LoginRequest, opts ...gr
 	return out, nil
 }
 
-func (c *exchangeClient) UpdateData(ctx context.Context, opts ...grpc.CallOption) (Exchange_UpdateDataClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Exchange_ServiceDesc.Streams[0], Exchange_UpdateData_FullMethodName, opts...)
+func (c *exchangeClient) UpdateData(ctx context.Context, in *UpdateDataRequest, opts ...grpc.CallOption) (*UpdateDataResponse, error) {
+	out := new(UpdateDataResponse)
+	err := c.cc.Invoke(ctx, Exchange_UpdateData_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &exchangeUpdateDataClient{stream}
-	return x, nil
+	return out, nil
 }
 
-type Exchange_UpdateDataClient interface {
-	Send(*UpdateDataRequest) error
-	CloseAndRecv() (*UpdateDataResponse, error)
-	grpc.ClientStream
-}
-
-type exchangeUpdateDataClient struct {
-	grpc.ClientStream
-}
-
-func (x *exchangeUpdateDataClient) Send(m *UpdateDataRequest) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *exchangeUpdateDataClient) CloseAndRecv() (*UpdateDataResponse, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(UpdateDataResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *exchangeClient) ReciveCommand(ctx context.Context, in *ResiveCommandRequest, opts ...grpc.CallOption) (Exchange_ReciveCommandClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Exchange_ServiceDesc.Streams[1], Exchange_ReciveCommand_FullMethodName, opts...)
+func (c *exchangeClient) ReciveCommand(ctx context.Context, in *ResiveCommandRequest, opts ...grpc.CallOption) (*ResiveCommandsResponse, error) {
+	out := new(ResiveCommandsResponse)
+	err := c.cc.Invoke(ctx, Exchange_ReciveCommand_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &exchangeReciveCommandClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Exchange_ReciveCommandClient interface {
-	Recv() (*ResiveCommandsResponse, error)
-	grpc.ClientStream
-}
-
-type exchangeReciveCommandClient struct {
-	grpc.ClientStream
-}
-
-func (x *exchangeReciveCommandClient) Recv() (*ResiveCommandsResponse, error) {
-	m := new(ResiveCommandsResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
+	return out, nil
 }
 
 func (c *exchangeClient) CuntPass(ctx context.Context, in *CountPassRequest, opts ...grpc.CallOption) (*CountPassResponse, error) {
@@ -166,8 +118,8 @@ func (c *exchangeClient) CuntOpening(ctx context.Context, in *CuntOpeningRequest
 type ExchangeServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
-	UpdateData(Exchange_UpdateDataServer) error
-	ReciveCommand(*ResiveCommandRequest, Exchange_ReciveCommandServer) error
+	UpdateData(context.Context, *UpdateDataRequest) (*UpdateDataResponse, error)
+	ReciveCommand(context.Context, *ResiveCommandRequest) (*ResiveCommandsResponse, error)
 	CuntPass(context.Context, *CountPassRequest) (*CountPassResponse, error)
 	CuntDelayed(context.Context, *CuntDelayedRequest) (*CuntDelayedResponse, error)
 	CuntOpening(context.Context, *CuntOpeningRequest) (*CuntOpeningResponse, error)
@@ -184,11 +136,11 @@ func (UnimplementedExchangeServer) Register(context.Context, *RegisterRequest) (
 func (UnimplementedExchangeServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedExchangeServer) UpdateData(Exchange_UpdateDataServer) error {
-	return status.Errorf(codes.Unimplemented, "method UpdateData not implemented")
+func (UnimplementedExchangeServer) UpdateData(context.Context, *UpdateDataRequest) (*UpdateDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateData not implemented")
 }
-func (UnimplementedExchangeServer) ReciveCommand(*ResiveCommandRequest, Exchange_ReciveCommandServer) error {
-	return status.Errorf(codes.Unimplemented, "method ReciveCommand not implemented")
+func (UnimplementedExchangeServer) ReciveCommand(context.Context, *ResiveCommandRequest) (*ResiveCommandsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReciveCommand not implemented")
 }
 func (UnimplementedExchangeServer) CuntPass(context.Context, *CountPassRequest) (*CountPassResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CuntPass not implemented")
@@ -248,51 +200,40 @@ func _Exchange_Login_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Exchange_UpdateData_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(ExchangeServer).UpdateData(&exchangeUpdateDataServer{stream})
-}
-
-type Exchange_UpdateDataServer interface {
-	SendAndClose(*UpdateDataResponse) error
-	Recv() (*UpdateDataRequest, error)
-	grpc.ServerStream
-}
-
-type exchangeUpdateDataServer struct {
-	grpc.ServerStream
-}
-
-func (x *exchangeUpdateDataServer) SendAndClose(m *UpdateDataResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *exchangeUpdateDataServer) Recv() (*UpdateDataRequest, error) {
-	m := new(UpdateDataRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+func _Exchange_UpdateData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateDataRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return m, nil
-}
-
-func _Exchange_ReciveCommand_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(ResiveCommandRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+	if interceptor == nil {
+		return srv.(ExchangeServer).UpdateData(ctx, in)
 	}
-	return srv.(ExchangeServer).ReciveCommand(m, &exchangeReciveCommandServer{stream})
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Exchange_UpdateData_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExchangeServer).UpdateData(ctx, req.(*UpdateDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-type Exchange_ReciveCommandServer interface {
-	Send(*ResiveCommandsResponse) error
-	grpc.ServerStream
-}
-
-type exchangeReciveCommandServer struct {
-	grpc.ServerStream
-}
-
-func (x *exchangeReciveCommandServer) Send(m *ResiveCommandsResponse) error {
-	return x.ServerStream.SendMsg(m)
+func _Exchange_ReciveCommand_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResiveCommandRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExchangeServer).ReciveCommand(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Exchange_ReciveCommand_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExchangeServer).ReciveCommand(ctx, req.(*ResiveCommandRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Exchange_CuntPass_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -365,6 +306,14 @@ var Exchange_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Exchange_Login_Handler,
 		},
 		{
+			MethodName: "UpdateData",
+			Handler:    _Exchange_UpdateData_Handler,
+		},
+		{
+			MethodName: "ReciveCommand",
+			Handler:    _Exchange_ReciveCommand_Handler,
+		},
+		{
 			MethodName: "CuntPass",
 			Handler:    _Exchange_CuntPass_Handler,
 		},
@@ -377,17 +326,6 @@ var Exchange_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Exchange_CuntOpening_Handler,
 		},
 	},
-	Streams: []grpc.StreamDesc{
-		{
-			StreamName:    "UpdateData",
-			Handler:       _Exchange_UpdateData_Handler,
-			ClientStreams: true,
-		},
-		{
-			StreamName:    "ReciveCommand",
-			Handler:       _Exchange_ReciveCommand_Handler,
-			ServerStreams: true,
-		},
-	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "exchange/exchange.proto",
 }

@@ -7,8 +7,8 @@ option go_package = "nnk.exchange.v1;exchangev1";
 service Exchange {
     rpc Register (RegisterRequest) returns (RegisterResponse);
     rpc Login (LoginRequest) returns (loginResponse);
-    rpc UpdateData (stream UpdateDataRequest) returns (UpdateDataResponse);
-    rpc ReciveCommand (ResiveCommandRequest) returns (stream ResiveCommandsResponse);
+    rpc UpdateData (UpdateDataRequest) returns (UpdateDataResponse);
+    rpc ReciveCommand (ResiveCommandRequest) returns (ResiveCommandsResponse);
     rpc CuntPass (CountPassRequest) returns (CountPassResponse);
     rpc CuntDelayed (CuntDelayedRequest) returns (CuntDelayedResponse);
     rpc CuntOpening (CuntOpeningRequest) returns (CuntOpeningResponse);
