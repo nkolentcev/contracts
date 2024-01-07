@@ -53,8 +53,7 @@ message ResiveCommandRequest {
 }
 
 message ResiveCommandsResponse {
-  string uuid = 1;
-  bool ready = 2;
+  bool ready = 1;
 }
 
 message CountPassRequest {
