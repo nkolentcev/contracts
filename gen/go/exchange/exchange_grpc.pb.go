@@ -22,6 +22,7 @@ const (
 	Exchange_Register_FullMethodName      = "/exchange.Exchange/Register"
 	Exchange_Login_FullMethodName         = "/exchange.Exchange/Login"
 	Exchange_UpdateData_FullMethodName    = "/exchange.Exchange/UpdateData"
+	Exchange_CommandStream_FullMethodName = "/exchange.Exchange/CommandStream"
 	Exchange_ReciveCommand_FullMethodName = "/exchange.Exchange/ReciveCommand"
 	Exchange_CuntPass_FullMethodName      = "/exchange.Exchange/CuntPass"
 	Exchange_CuntDelayed_FullMethodName   = "/exchange.Exchange/CuntDelayed"
@@ -35,6 +36,7 @@ type ExchangeClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	UpdateData(ctx context.Context, in *UpdateDataRequest, opts ...grpc.CallOption) (*UpdateDataResponse, error)
+	CommandStream(ctx context.Context, opts ...grpc.CallOption) (Exchange_CommandStreamClient, error)
 	ReciveCommand(ctx context.Context, in *ResiveCommandRequest, opts ...grpc.CallOption) (*ResiveCommandsResponse, error)
 	CuntPass(ctx context.Context, in *CountPassRequest, opts ...grpc.CallOption) (*CountPassResponse, error)
 	CuntDelayed(ctx context.Context, in *CuntDelayedRequest, opts ...grpc.CallOption) (*CuntDelayedResponse, error)
@@ -74,6 +76,37 @@ func (c *exchangeClient) UpdateData(ctx context.Context, in *UpdateDataRequest, 
 		return nil, err
 	}
 	return out, nil
+}
+
+func (c *exchangeClient) CommandStream(ctx context.Context, opts ...grpc.CallOption) (Exchange_CommandStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Exchange_ServiceDesc.Streams[0], Exchange_CommandStream_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &exchangeCommandStreamClient{stream}
+	return x, nil
+}
+
+type Exchange_CommandStreamClient interface {
+	Send(*MessageRequest) error
+	Recv() (*MrssageResponse, error)
+	grpc.ClientStream
+}
+
+type exchangeCommandStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *exchangeCommandStreamClient) Send(m *MessageRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *exchangeCommandStreamClient) Recv() (*MrssageResponse, error) {
+	m := new(MrssageResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func (c *exchangeClient) ReciveCommand(ctx context.Context, in *ResiveCommandRequest, opts ...grpc.CallOption) (*ResiveCommandsResponse, error) {
@@ -119,6 +152,7 @@ type ExchangeServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	UpdateData(context.Context, *UpdateDataRequest) (*UpdateDataResponse, error)
+	CommandStream(Exchange_CommandStreamServer) error
 	ReciveCommand(context.Context, *ResiveCommandRequest) (*ResiveCommandsResponse, error)
 	CuntPass(context.Context, *CountPassRequest) (*CountPassResponse, error)
 	CuntDelayed(context.Context, *CuntDelayedRequest) (*CuntDelayedResponse, error)
@@ -138,6 +172,9 @@ func (UnimplementedExchangeServer) Login(context.Context, *LoginRequest) (*Login
 }
 func (UnimplementedExchangeServer) UpdateData(context.Context, *UpdateDataRequest) (*UpdateDataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateData not implemented")
+}
+func (UnimplementedExchangeServer) CommandStream(Exchange_CommandStreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method CommandStream not implemented")
 }
 func (UnimplementedExchangeServer) ReciveCommand(context.Context, *ResiveCommandRequest) (*ResiveCommandsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReciveCommand not implemented")
@@ -216,6 +253,32 @@ func _Exchange_UpdateData_Handler(srv interface{}, ctx context.Context, dec func
 		return srv.(ExchangeServer).UpdateData(ctx, req.(*UpdateDataRequest))
 	}
 	return interceptor(ctx, in, info, handler)
+}
+
+func _Exchange_CommandStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ExchangeServer).CommandStream(&exchangeCommandStreamServer{stream})
+}
+
+type Exchange_CommandStreamServer interface {
+	Send(*MrssageResponse) error
+	Recv() (*MessageRequest, error)
+	grpc.ServerStream
+}
+
+type exchangeCommandStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *exchangeCommandStreamServer) Send(m *MrssageResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *exchangeCommandStreamServer) Recv() (*MessageRequest, error) {
+	m := new(MessageRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func _Exchange_ReciveCommand_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -326,6 +389,13 @@ var Exchange_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Exchange_CuntOpening_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "CommandStream",
+			Handler:       _Exchange_CommandStream_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "exchange/exchange.proto",
 }

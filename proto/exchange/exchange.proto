@@ -8,6 +8,7 @@ service Exchange {
     rpc Register (RegisterRequest) returns (RegisterResponse);
     rpc Login (LoginRequest) returns (loginResponse);
     rpc UpdateData (UpdateDataRequest) returns (UpdateDataResponse);
+    rpc CommandStream (stream MessageRequest) returns (stream MrssageResponse);
     rpc ReciveCommand (ResiveCommandRequest) returns (ResiveCommandsResponse);
     rpc CuntPass (CountPassRequest) returns (CountPassResponse);
     rpc CuntDelayed (CuntDelayedRequest) returns (CuntDelayedResponse);
@@ -44,6 +45,18 @@ message UpdateDataResponse {
   bool status = 1;
   string code = 2;
   string errmessage = 3;
+}
+
+message MessageRequest{
+  string uuid =1;
+  string command =2;
+  string params =3; 
+}
+
+message MrssageResponse {
+  string uuid =1;
+  string command =2;
+  string params =3; 
 }
 
 message ResiveCommandRequest {
