@@ -48,13 +48,13 @@ message UpdateDataResponse {
 
 message ResiveCommandRequest {
   string uuid = 1;
-  bool ready = 2;
+  string command = 2;
+  string params = 3;
 }
 
 message ResiveCommandsResponse {
   string uuid = 1;
-  string command = 2;
-  string params = 3;
+  bool ready = 2;
 }
 
 message CountPassRequest {
