@@ -34,11 +34,11 @@ message loginResponse{
 
 message UpdateDataRequest {
   string uuid = 1;
-  optional float btemp = 2;
-  optional float cputemp = 3;
-  optional string ethernetip = 4;
-  optional bool health = 5;
-  optional bool online = 6;
+  float btemp = 2;
+  float cputemp = 3;
+  string ethernetip = 4;
+  bool health = 5;
+  bool online = 6;
 }
 
 message UpdateDataResponse {
