@@ -5,25 +5,33 @@ package mobexchange;
 option go_package = "nnk.mobexchange.v1;mobexchangev1";
 
 service MobileExchange {
-    rpc Register (RegisterRequest) returns (RegisterResponse);
     rpc Login (LoginRequest) returns (loginResponse);
+    rpc GetAgentsList (GetRequest) returns (stream GetAgentsListResponse);
 }
 
 
-message RegisterRequest {
-    string serial_number = 1;
-    string api_key = 2;
-  }
-  
-  message RegisterResponse {
-    string agent_uuid = 1;
-  }
-  
-  message LoginRequest{
-    string agent_uuid =1;
-  }
-  
-  message loginResponse{
+message LoginRequest{
+    string api_key =1;
+}
+
+message loginResponse{
     string token = 1;
-  }
-  
+}
+// agents
+message Agent {
+    string uuid = 1;
+    string sn = 2;
+    string name = 3;
+    bool health = 4;
+    bool online = 5;
+    bool new = 6;
+}
+
+message GetAgentsListResponse {
+    repeated Agent agent = 1;
+}
+
+message GetRequest {
+    string token =1;
+}
+
